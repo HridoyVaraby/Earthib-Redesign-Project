@@ -129,6 +129,21 @@ This scaffold includes a comprehensive set of modern web development tools:
 - **Type Safety**: End-to-end TypeScript with Zod validation
 - **Essential Hooks**: 100+ useful React hooks with ReactUse for common patterns
 
+## 🚀 Static Export for Hosting
+
+This project is configured for static export, making it perfect for hosting on platforms like cPanel:
+
+```bash
+# Build and export the static site
+npm run export
+```
+
+The static site will be generated in the `out` directory, ready for deployment to any static hosting provider.
+
+## 🤖 LLM Optimization
+
+This project includes an `llms.txt` file in the public directory, which provides structured information about the website for Large Language Models. This file helps LLMs understand and interact with the site's content more effectively.
+
 ## 🤝 Get Started with Z.ai
 
 1. **Clone this scaffold** to jumpstart your project
