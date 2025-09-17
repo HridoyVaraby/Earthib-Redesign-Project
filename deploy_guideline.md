@@ -39,18 +39,56 @@ An [llms.txt](file:///d:/Work/Node%20Projects/Earthib%20Redesign%20Project/publi
 - Includes contact information and legal pages
 - Helps LLMs understand and interact with the site's content
 
-## Deployment Steps for cPanel
+## Deployment Process
+
+### Automated Deployment Scripts
+
+To simplify the deployment process, two scripts have been created:
+1. [deploy.sh](file:///d:/Work/Node%20Projects/Earthib%20Redesign%20Project/deploy.sh) - For Unix/Linux/Mac systems
+2. [deploy.bat](file:///d:/Work/Node%20Projects/Earthib%20Redesign%20Project/deploy.bat) - For Windows systems
+
+These scripts automate the entire deployment process:
+1. Build the project using Next.js
+2. Create a clean [out](file:///d:/Work/Node%20Projects/Earthib%20Redesign%20Project/out) directory
+3. Copy all necessary static files to the [out](file:///d:/Work/Node%20Projects/Earthib%20Redesign%20Project/out) directory
+
+### Manual Deployment Steps
+
+If you prefer to deploy manually:
 
 1. **Build the static site**:
    ```bash
-   npm run export
+   npm run build
    ```
-   This will generate a static site in the `out` directory.
+
+2. **Create and populate the out directory**:
+   ```bash
+   # Remove existing out directory if it exists
+   rm -rf out
+   
+   # Create new out directory
+   mkdir out
+   
+   # Copy static files
+   cp -r .next/server/app/. out/
+   cp -r public/. out/
+   ```
+
+3. **Verify the contents of the out directory**:
+   ```bash
+   ls -la out/
+   ```
+
+## Deployment Steps for cPanel
+
+1. **Run the deployment script**:
+   - On Unix/Linux/Mac: `./deploy.sh`
+   - On Windows: `deploy.bat`
 
 2. **Upload files to cPanel**:
    - Use cPanel's File Manager to upload the contents of the `out` directory
    - Upload to your desired subdirectory or public_html for root domain
-   - Make sure to upload the [.htaccess](file:///d:/Work/Node%20Projects/Earthib%20Redesign%20Project/public/.htaccess), [sitemap.xml](file:///d:/Work/Node%20Projects/Earthib%20Redesign%20Project/public/sitemap.xml), and [llms.txt](file:///d:/Work/Node%20Projects/Earthib%20Redesign%20Project/public/llms.txt) files from the public directory
+   - Make sure all files are uploaded including `.htaccess`, `sitemap.xml`, and `llms.txt`
 
 3. **Configure your domain**:
    - If uploading to a subdirectory, make sure your domain points to the correct folder
@@ -88,7 +126,7 @@ Before deployment, update the [llms.txt](file:///d:/Work/Node%20Projects/Earthib
 ## Updating Your Site
 
 To update your site after making changes:
-1. Rebuild the site with `npm run build`
+1. Run the deployment script or follow the manual deployment steps
 2. Upload the new contents of the `out` directory to cPanel
 3. Update the [sitemap.xml](file:///d:/Work/Node%20Projects/Earthib%20Redesign%20Project/public/sitemap.xml) and [llms.txt](file:///d:/Work/Node%20Projects/Earthib%20Redesign%20Project/public/llms.txt) if you've added new pages
 
