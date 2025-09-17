@@ -1,0 +1,188 @@
+<?php
+/**
+ * PHPMailer Email Handler
+ * 
+ * Handles POST requests from contact forms and sends emails via SMTP.
+ * Returns JSON responses for frontend integration.
+ * 
+ * @version 1.0
+ * @author  PHPMailer Module
+ */
+
+// Set response header to JSON
+header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
+
+// Handle preflight OPTIONS request
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
+// Only allow POST requests
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'Method not allowed. Only POST requests are accepted.'
+    ]);
+    exit();
+}
+
+// Load PHPMailer classes
+require_once 'phpmailer/PHPMailer.php';
+require_once 'phpmailer/SMTP.php';
+require_once 'phpmailer/Exception.php';
+
+// Use PHPMailer namespace
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
+
+try {
+    // Load configuration
+    $config = require_once 'config.mail.php';
+    
+    // Validate and sanitize input data
+    $name = isset($_POST['name']) ? trim(strip_tags($_POST['name'])) : '';
+    $email = isset($_POST['email']) ? trim(filter_var($_POST['email'], FILTER_SANITIZE_EMAIL)) : '';
+    $message = isset($_POST['message']) ? trim(strip_tags($_POST['message'])) : '';
+    
+    // Input validation
+    if (empty($name)) {
+        throw new Exception('Name is required.');
+    }
+    
+    if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        throw new Exception('A valid email address is required.');
+    }
+    
+    if (empty($message)) {
+        throw new Exception('Message is required.');
+    }
+    
+    // Additional validation rules
+    if (strlen($name) > 100) {
+        throw new Exception('Name must be less than 100 characters.');
+    }
+    
+    if (strlen($email) > 254) {
+        throw new Exception('Email address is too long.');
+    }
+    
+    if (strlen($message) > 5000) {
+        throw new Exception('Message must be less than 5000 characters.');
+    }
+    
+    // Create PHPMailer instance
+    $mail = new PHPMailer(true);
+    
+    // Enable debug mode if configured
+    if ($config['settings']['debug']) {
+        $mail->SMTPDebug = SMTP::DEBUG_SERVER;
+    }
+    
+    // SMTP Configuration
+    $mail->isSMTP();
+    $mail->Host       = $config['smtp']['host'];
+    $mail->SMTPAuth   = true;
+    $mail->Username   = $config['smtp']['username'];
+    $mail->Password   = $config['smtp']['password'];
+    $mail->SMTPSecure = $config['smtp']['secure'];
+    $mail->Port       = $config['smtp']['port'];
+    $mail->CharSet    = $config['settings']['charset'];
+    
+    // Email settings
+    $mail->setFrom($config['from']['email'], $config['from']['name']);
+    $mail->addAddress($config['to']['email'], $config['to']['name']);
+    
+    // Set reply-to if enabled
+    if ($config['settings']['reply_to']) {
+        $mail->addReplyTo($email, $name);
+    }
+    
+    // Email content
+    $mail->isHTML(true);
+    $mail->Subject = $config['settings']['subject'];
+    
+    // Create HTML email body
+    $htmlBody = '
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin-bottom: 20px; }
+            .content { background-color: #ffffff; padding: 20px; border: 1px solid #dee2e6; border-radius: 5px; }
+            .field { margin-bottom: 15px; }
+            .label { font-weight: bold; color: #495057; }
+            .value { margin-top: 5px; padding: 10px; background-color: #f8f9fa; border-radius: 3px; }
+            .message-content { white-space: pre-line; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h2>New Contact Form Submission</h2>
+                <p>You have received a new message from your website contact form.</p>
+            </div>
+            <div class="content">
+                <div class="field">
+                    <div class="label">Name:</div>
+                    <div class="value">' . htmlspecialchars($name, ENT_QUOTES, 'UTF-8') . '</div>
+                </div>
+                <div class="field">
+                    <div class="label">Email:</div>
+                    <div class="value">' . htmlspecialchars($email, ENT_QUOTES, 'UTF-8') . '</div>
+                </div>
+                <div class="field">
+                    <div class="label">Message:</div>
+                    <div class="value message-content">' . htmlspecialchars($message, ENT_QUOTES, 'UTF-8') . '</div>
+                </div>
+                <div class="field">
+                    <div class="label">Submitted:</div>
+                    <div class="value">' . date('Y-m-d H:i:s T') . '</div>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>';
+    
+    $mail->Body = $htmlBody;
+    
+    // Create plain text version
+    $textBody = "New Contact Form Submission\n\n";
+    $textBody .= "Name: " . $name . "\n";
+    $textBody .= "Email: " . $email . "\n";
+    $textBody .= "Message:\n" . $message . "\n\n";
+    $textBody .= "Submitted: " . date('Y-m-d H:i:s T') . "\n";
+    
+    $mail->AltBody = $textBody;
+    
+    // Send the email
+    $mail->send();
+    
+    // Success response
+    http_response_code(200);
+    echo json_encode([
+        'status' => 'success',
+        'message' => 'Email sent successfully! Thank you for your message.'
+    ]);
+    
+} catch (Exception $e) {
+    // Error response
+    http_response_code(400);
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'Failed to send email: ' . $e->getMessage()
+    ]);
+    
+    // Log error if debug mode is enabled
+    if (isset($config['settings']['debug']) && $config['settings']['debug']) {
+        error_log('PHPMailer Error: ' . $e->getMessage());
+    }
+}
+?>

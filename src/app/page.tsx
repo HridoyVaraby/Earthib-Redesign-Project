@@ -7,6 +7,14 @@ import { Menu, Globe, Users, Award, Mail, Phone, MapPin, ChevronRight, Star, Arr
 
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // Add state for form handling
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    message: ''
+  });
+  const [formStatus, setFormStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const [formMessage, setFormMessage] = useState('');
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -14,6 +22,54 @@ export default function Home() {
       element.scrollIntoView({ behavior: "smooth" });
     }
     setIsMenuOpen(false);
+  };
+
+  // Handle form input changes
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormStatus('submitting');
+    setFormMessage('');
+
+    try {
+      // Create FormData object for application/x-www-form-urlencoded
+      const formDataToSend = new URLSearchParams();
+      formDataToSend.append('name', formData.name);
+      formDataToSend.append('email', formData.email);
+      formDataToSend.append('message', formData.message);
+
+      const response = await fetch('/mailer/send-email.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formDataToSend.toString()
+      });
+
+      const result = await response.json();
+
+      if (result.status === 'success') {
+        setFormStatus('success');
+        setFormMessage(result.message);
+        // Reset form on success
+        setFormData({ name: '', email: '', message: '' });
+      } else {
+        setFormStatus('error');
+        setFormMessage(result.message);
+      }
+    } catch (error) {
+      setFormStatus('error');
+      setFormMessage('Network error. Please try again later.');
+      console.error('Form submission error:', error);
+    }
   };
 
   return (
@@ -520,7 +576,19 @@ export default function Home() {
             <div className="h-full">
               <div className="bg-white p-8 rounded-3xl shadow-md border border-gray-100 h-full flex flex-col">
                 <h3 className="text-2xl font-bold text-gray-900 mb-6">Send us a Message</h3>
-                <form className="space-y-6 flex-grow">
+                {/* Status Messages */}
+                {formStatus === 'success' && (
+                  <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                    {formMessage}
+                  </div>
+                )}
+                
+                {formStatus === 'error' && (
+                  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                    {formMessage}
+                  </div>
+                )}
+                <form onSubmit={handleSubmit} className="space-y-6 flex-grow">
                   <div>
                     <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
                       Your Name
@@ -528,8 +596,14 @@ export default function Home() {
                     <input
                       type="text"
                       id="name"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#377A00] focus:border-transparent transition-colors"
                       placeholder="Enter your full name"
+                      required
+                      maxLength={100}
+                      disabled={formStatus === 'submitting'}
                     />
                   </div>
                   <div>
@@ -539,8 +613,14 @@ export default function Home() {
                     <input
                       type="email"
                       id="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#377A00] focus:border-transparent transition-colors"
                       placeholder="your@email.com"
+                      required
+                      maxLength={254}
+                      disabled={formStatus === 'submitting'}
                     />
                   </div>
                   <div>
@@ -549,14 +629,24 @@ export default function Home() {
                     </label>
                     <textarea
                       id="message"
+                      name="message"
+                      value={formData.message}
+                      onChange={handleInputChange}
                       rows={5}
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#377A00] focus:border-transparent transition-colors resize-none"
                       placeholder="Tell us about your interest in Earthib.com..."
+                      required
+                      maxLength={5000}
+                      disabled={formStatus === 'submitting'}
                     ></textarea>
                   </div>
                   <div className="mt-auto">
-                    <Button type="submit" className="w-full bg-[#377A00] hover:bg-[#2d6200] text-white py-4 shadow-lg hover:shadow-xl transition-shadow rounded-xl">
-                      Send Message
+                    <Button 
+                      type="submit" 
+                      className="w-full bg-[#377A00] hover:bg-[#2d6200] text-white py-4 shadow-lg hover:shadow-xl transition-shadow rounded-xl"
+                      disabled={formStatus === 'submitting'}
+                    >
+                      {formStatus === 'submitting' ? 'Sending...' : 'Send Message'}
                       <ArrowRight className="ml-2 h-5 w-5" />
                     </Button>
                   </div>

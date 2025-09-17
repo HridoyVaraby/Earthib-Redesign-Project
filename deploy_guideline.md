@@ -7,6 +7,7 @@ The Earthib Redesign Project is a modern Next.js 15 application with the followi
 - Uses static export for deployment (no server-side operations or database)
 - Includes shadcn/ui components with Tailwind CSS
 - Optimized for static hosting environments like cPanel
+- Integrated with PHPMailer for contact form functionality
 
 ## Static Export Configuration
 
@@ -38,6 +39,13 @@ An [llms.txt](file:///d:/Work/Node%20Projects/Earthib%20Redesign%20Project/publi
 - Provides structured information about the site's sections and services
 - Includes contact information and legal pages
 - Helps LLMs understand and interact with the site's content
+
+### Mailer System
+A complete PHPMailer system has been added to the [public/mailer](file:///d:/Work/Node%20Projects/Earthib%20Redesign%20Project/public/mailer/) directory:
+- PHPMailer library for sending emails via SMTP
+- Contact form handler at `/mailer/send-email.php`
+- Configuration file at `/mailer/config.mail.php`
+- Integration with the contact form on the website
 
 ## Deployment Process
 
@@ -88,9 +96,32 @@ If you prefer to deploy manually:
 2. **Upload files to cPanel**:
    - Use cPanel's File Manager to upload the contents of the `out` directory
    - Upload to your desired subdirectory or public_html for root domain
-   - Make sure all files are uploaded including `.htaccess`, `sitemap.xml`, and `llms.txt`
+   - Make sure all files are uploaded including `.htaccess`, `sitemap.xml`, `llms.txt`, and the entire `mailer` directory
 
-3. **Configure your domain**:
+3. **Configure Email Settings**:
+   - Edit `mailer/config.mail.php` with your SMTP credentials:
+     ```php
+     $emailConfig = [
+         'smtp' => [
+             'host'     => 'your-smtp-server.com',
+             'username' => 'your-email@domain.com',
+             'password' => 'your-email-password',
+             'port'     => 587,
+             'secure'   => 'tls',
+         ],
+         'from' => [
+             'email' => 'your-email@domain.com',
+             'name'  => 'Your Website Name',
+         ],
+         'to' => [
+             'email' => 'recipient@domain.com',
+             'name'  => 'Your Name',
+         ],
+         // ... rest of config
+     ];
+     ```
+
+4. **Configure your domain**:
    - If uploading to a subdirectory, make sure your domain points to the correct folder
    - The [.htaccess](file:///d:/Work/Node%20Projects/Earthib%20Redesign%20Project/public/.htaccess) file will handle routing automatically
 
@@ -108,11 +139,20 @@ Before deployment, update the [llms.txt](file:///d:/Work/Node%20Projects/Earthib
 2. Update contact information if needed
 3. Add or remove sections based on your actual website structure
 
+## Configuring the Mailer System
+
+Before deployment, update the mailer configuration in `mailer/config.mail.php`:
+1. Update SMTP credentials with your email provider settings
+2. Set the correct "from" and "to" email addresses
+3. Adjust port and security settings as needed for your hosting provider
+
+Common configurations for different email providers are included in the config file as examples.
+
 ## Benefits of Static Export
 
 1. **Fast Loading**: Pre-rendered HTML files load quickly
 2. **Cheap Hosting**: Works with any static file hosting
-3. **Better Security**: No server-side code to exploit
+3. **Better Security**: No server-side code to exploit (except for the PHPMailer)
 4. **Easy Scaling**: Simply serve files from a CDN
 5. **Reliable**: Fewer points of failure compared to dynamic sites
 
@@ -129,5 +169,6 @@ To update your site after making changes:
 1. Run the deployment script or follow the manual deployment steps
 2. Upload the new contents of the `out` directory to cPanel
 3. Update the [sitemap.xml](file:///d:/Work/Node%20Projects/Earthib%20Redesign%20Project/public/sitemap.xml) and [llms.txt](file:///d:/Work/Node%20Projects/Earthib%20Redesign%20Project/public/llms.txt) if you've added new pages
+4. If you've made changes to the mailer system, ensure those are also uploaded
 
 This approach is ideal for content-focused websites, portfolios, landing pages, and marketing sites where real-time features and dynamic content are not required.

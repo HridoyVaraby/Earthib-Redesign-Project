@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Handler Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover:not(:disabled) {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .alert {
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            display: none;
+        }
+        .alert.show {
+            display: block;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .note {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border: 1px solid #ffeaa7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PHPMailer Email Handler Test</h1>
+        
+        <div class="note">
+            <strong>Note:</strong> Before testing, make sure to update the SMTP credentials in <code>config.mail.php</code>. 
+            This test form demonstrates the exact format expected by the email handler.
+        </div>
+
+        <div id="alert" class="alert"></div>
+
+        <form id="testForm">
+            <div class="form-group">
+                <label for="name">Full Name *</label>
+                <input type="text" id="name" name="name" required maxlength="100" 
+                       placeholder="Enter your full name" value="Test User">
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address *</label>
+                <input type="email" id="email" name="email" required maxlength="254" 
+                       placeholder="Enter your email address" value="test@example.com">
+            </div>
+
+            <div class="form-group">
+                <label for="message">Message *</label>
+                <textarea id="message" name="message" required maxlength="5000" rows="6" 
+                          placeholder="Enter your message">This is a test message from the PHPMailer email handler. If you receive this email, the configuration is working correctly!</textarea>
+            </div>
+
+            <button type="submit" id="submitBtn">Send Test Email</button>
+        </form>
+
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
+            <h3>Configuration Checklist:</h3>
+            <ul>
+                <li>✓ <code>send-email.php</code> - Email handler script</li>
+                <li>✓ <code>config.mail.php</code> - SMTP configuration (update with your credentials)</li>
+                <li>✓ <code>phpmailer/</code> - PHPMailer library files</li>
+                <li>✓ <code>form_setup_guide.md</code> - React integration guide</li>
+            </ul>
+            
+            <h3>Next Steps:</h3>
+            <ol>
+                <li>Update SMTP settings in <code>config.mail.php</code></li>
+                <li>Test the form above to verify email delivery</li>
+                <li>Copy the <code>mailer/</code> folder to your React project's <code>public_html/</code></li>
+                <li>Follow the integration guide to add the contact form to your React app</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('testForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const alertDiv = document.getElementById('alert');
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending...';
+            alertDiv.className = 'alert';
+            alertDiv.style.display = 'none';
+            
+            try {
+                // Prepare form data
+                const formData = new URLSearchParams();
+                formData.append('name', document.getElementById('name').value);
+                formData.append('email', document.getElementById('email').value);
+                formData.append('message', document.getElementById('message').value);
+                
+                // Send request
+                const response = await fetch('send-email.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData.toString()
+                });
+                
+                const result = await response.json();
+                
+                // Show result
+                alertDiv.textContent = result.message;
+                if (result.status === 'success') {
+                    alertDiv.className = 'alert alert-success show';
+                    // Reset form on success
+                    document.getElementById('testForm').reset();
+                } else {
+                    alertDiv.className = 'alert alert-error show';
+                }
+                
+            } catch (error) {
+                alertDiv.textContent = 'Network error: ' + error.message;
+                alertDiv.className = 'alert alert-error show';
+                console.error('Form submission error:', error);
+            } finally {
+                // Reset button
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Send Test Email';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -140,6 +140,21 @@ npm run export
 
 The static site will be generated in the `out` directory, ready for deployment to any static hosting provider.
 
+## 📧 Contact Form Integration
+
+This project includes a fully functional contact form integrated with PHPMailer for sending emails via SMTP:
+
+- Contact form located in the "Connect with Us" section
+- Backend email handler at `/mailer/send-email.php`
+- Configuration file at `/mailer/config.mail.php`
+- Supports all major SMTP providers (Gmail, Outlook, cPanel hosting, etc.)
+- Includes client-side validation and user feedback
+
+To configure the contact form:
+1. Update SMTP credentials in `public/mailer/config.mail.php`
+2. Deploy the entire `mailer` directory to your hosting provider
+3. Test the form to ensure emails are being sent
+
 ## 🤖 LLM Optimization
 
 This project includes an `llms.txt` file in the public directory, which provides structured information about the website for Large Language Models. This file helps LLMs understand and interact with the site's content more effectively.

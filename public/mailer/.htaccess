@@ -1,0 +1,31 @@
+# Security settings for mailer directory
+# This file helps protect sensitive configuration files
+
+# Deny direct access to config files
+<Files "config.mail.php">
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+# Prevent access to .htaccess itself
+<Files ".htaccess">
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+# Enable error reporting for debugging (disable in production)
+# php_flag display_errors Off
+# php_flag log_errors On
+
+# Set proper content type for PHP files
+AddType application/x-httpd-php .php
+
+# Prevent directory browsing
+Options -Indexes
+
+# Security headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options nosniff
+    Header set X-Frame-Options SAMEORIGIN
+    Header set X-XSS-Protection "1; mode=block"
+</IfModule>
