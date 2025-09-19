@@ -229,7 +229,7 @@ export default function Home() {
               <div className="bg-white rounded-3xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow h-full flex flex-col">
                 <div className="relative h-80 overflow-hidden flex-shrink-0">
                   <img 
-                    src="http://images.varabit.com/uploads/hridoyvaraby.jpg" 
+                    src="https://images.varabit.com/uploads/hridoyvaraby.jpg" 
                     alt="Hridoy Varaby"
                     className="w-full h-full object-cover"
                   />
@@ -262,7 +262,7 @@ export default function Home() {
               <div className="bg-white rounded-3xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow h-full flex flex-col">
                 <div className="relative h-80 overflow-hidden flex-shrink-0">
                   <img 
-                    src="http://images.varabit.com/uploads/protik.jpg" 
+                    src="https://images.varabit.com/uploads/protik.jpg" 
                     alt="Rihanoor Islam Protik"
                     className="w-full h-full object-cover"
                   />

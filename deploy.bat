@@ -4,14 +4,12 @@ REM Earthib Redesign Project Deployment Script for Windows
 echo Building Earthib Redesign Project...
 npm run build
 
-echo Creating out directory...
-rmdir /s /q out
-mkdir out
-
-echo Copying static files...
-xcopy .next\server\app\* out\ /E /I /H
-xcopy public\* out\ /E /I /H
-
-echo Deployment files are ready in the 'out' directory
-echo Files included:
-dir out\
+echo Checking if out directory was created...
+if exist "out" (
+  echo Out directory exists. Contents:
+  dir out\
+) else (
+  echo Out directory not found. This might be because Next.js 15 with 'output: export' creates it during build.
+  echo Checking current directory structure:
+  dir
+)
